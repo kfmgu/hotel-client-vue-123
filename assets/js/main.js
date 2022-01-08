@@ -280,7 +280,6 @@ const app = new Vue({
             if (event.target.files.length)
                 this.addManagerForm.photo_file = event.target.files[0];
         },
-
         addUser() {
             var myHeaders = new Headers();
             myHeaders.append("Content-Type", "application/json");
