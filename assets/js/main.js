@@ -43,7 +43,7 @@ const app = new Vue({
             room_category_id: '7',
             value: "1200",
             start_date: "2022-02-07"
-        }
+        },
     },
     mounted() {
         document.body.className = 'home';
@@ -334,8 +334,29 @@ const app = new Vue({
                     }
                 })
         },
-        editPrice(price_id) {
-
+        editPrice(price_id, price_value) {
+            fetch(host + '/price/' + price_id, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.user.token}`,
+                },
+                body: JSON.stringify(
+                    {
+                        "value": price_value,
+                    }
+                ),
+            })
+                .then(res => {
+                    if (res.ok)
+                        this.showToast('Изменения внесены', ['alert-success']);
+                    else
+                        this.showToast('Что-то пошло не так', ['alert-danger']);
+                    return res.json();
+                })
+                .then(data => {
+                    this.pageManager();
+                })
         }
 
     },
