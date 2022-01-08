@@ -39,6 +39,11 @@ const app = new Vue({
             password: 'test_password',
             photo_file: 'null',
         },
+        addPriceForm: {
+            room_category_id: '7',
+            value: "1200",
+            start_date: "2022-02-07"
+        }
     },
     mounted() {
         document.body.className = 'home';
@@ -257,7 +262,7 @@ const app = new Vue({
                 })
         },
         toDismiss(user_id) {
-            fetch(host + '/user/' + user_id+'/to-dismiss', {
+            fetch(host + '/user/' + user_id + '/to-dismiss', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -281,11 +286,7 @@ const app = new Vue({
                 this.addManagerForm.photo_file = event.target.files[0];
         },
         addUser() {
-            var myHeaders = new Headers();
-            myHeaders.append("Content-Type", "application/json");
-            myHeaders.append("Authorization", `Bearer ${this.user.token}`);
-
-            var formData = new FormData();
+            let formData = new FormData();
             formData.append('name', this.addManagerForm.name);
             formData.append('surname', this.addManagerForm.surname);
             formData.append('patronymic', this.addManagerForm.patronymic);
@@ -293,28 +294,49 @@ const app = new Vue({
             formData.append('password', this.addManagerForm.password);
             formData.append('photo_file', this.addManagerForm.photo_file);
 
-            var requestOptions = {
+            fetch(host + "/user", {
                 method: 'POST',
-                headers: myHeaders,
+                headers: {
+                    'Authorization': `Bearer ${this.user.token}`
+                },
                 body: formData,
-                redirect: 'follow'
-            };
-
-            fetch(host + "/user", requestOptions)
+            })
                 .then(response => response.json())
                 .then(result => {
-                    if (result.error.code) {
+                    if (result.error) {
                         this.errorToast(result);
                     } else {
-                        this.openPage('manager');
+                        this.pageManager();
                     }
                 })
 
 
+        },
+        addPrice() {
+            let formData = new FormData();
+            formData.append('room_category_id', this.addPriceForm.room_category_id);
+            formData.append('value', this.addPriceForm.value);
+            formData.append('start_date', this.addPriceForm.start_date);
+
+            fetch(host + "/price", {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.user.token}`
+                },
+                body: formData,
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.error) {
+                        this.errorToast(result);
+                    } else {
+                        this.pageManager();
+                    }
+                })
+        },
+        editPrice(price_id) {
 
         }
-
-
 
     },
 });
