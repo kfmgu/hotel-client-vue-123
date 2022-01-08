@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Login</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+</head>
+<body>
+<div id="app">
+    <header class="bg-primary text-white">
+        <div class="container d-flex justify-content-between py-2">
+            <a href="index.html" class="navbar-brand text-white">
+                <strong>HOTEL</strong>
+            </a>
+            <nav class="nav nav-pills">
+                <a href="index.html" class="nav-link text-white">Главная</a>
+                <a href="login.html" class="nav-link text-white">Вход</a>
+                <a href="login.html" class="nav-link text-white">Выход</a>
+            </nav>
+            <form class="d-flex my-2">
+                <div class="input-group ">
+                    <input class="form-control " type="search" placeholder="Поиск заявки по коду"
+                           aria-label="Search">
+                    <div class="input-group-append">
+                        <a href="booking.html" class="btn btn-outline-light" type="submit">Найти</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </header>
+
+    <section class=" container p-5 border bg-light col-4 mt-4">
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h2>Добавление прайса</h2>
+        </div>
+        <form class="rounded-3">
+            <div class="mb-3">
+                <label>Категория номера</label>
+                <select class="form-select" aria-label="Default select example">
+                    <option selected disabled value="">Выбор категории номера</option>
+                    <option value="1">One</option>
+                    <option value="2">Two</option>
+                    <option value="3">Three</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label>Сумма</label>
+                <input type="text" class="form-control" placeholder="Введите сумму">
+            </div>
+            <div class="mb-3">
+                <label>Дата начала действия</label>
+                <input type="date" class="form-control">
+            </div>
+            <a href="manage.html" class="btn btn-success mt-3">Добавить</a>
+        </form>
+    </section>
+</div>
+</body>
+</html>

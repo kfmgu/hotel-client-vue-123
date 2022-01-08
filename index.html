@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hotel</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .fade-enter-active,
+        .fade-leave-active {
+            transition: all .3s ease-in-out;
+        }
+
+        .fade-enter,
+        .fade-leave-to {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <header v-if="page === 'index'" class="text-white">
+        <div class="mask h-100"
+             style="background-image: linear-gradient(to bottom,rgba(0,0,0,0.7),rgba(255,255,255,0));">
+            <div class="container d-flex justify-content-between py-2">
+                <a href="#" class="navbar-brand text-white" @click.prevent="openPage('index')">
+                    <strong>HOTEL</strong>
+                </a>
+                <nav class="nav nav-pills">
+                    <a href="#" class="nav-link text-white" @click.prevent="openPage('index')">Главная</a>
+                    <a href="#" class="nav-link text-white" @click.prevent="pageManager()" v-if="user">Управление</a>
+                    <a href="#" class="nav-link text-white" @click.prevent="openPage('login')" v-if="!user">Вход</a>
+                    <a href="#" class="nav-link text-white" @click.prevent="logout" v-if="user">Выход</a>
+                </nav>
+                <form class="my-2" @submit.prevent="readBooking(codeSearch)">
+                    <div class="input-group">
+                        <input class="form-control" type="search" placeholder="Поиск заявки по коду"
+                               aria-label="Search" v-model="codeSearch">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-light" type="submit">Найти</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </header>
+    <header v-if="page !== 'index'" class="bg-primary text-white">
+        <div class="container d-flex justify-content-between py-2">
+            <a href="#" class="navbar-brand text-white" @click.prevent="openPage('index')">
+                <strong>HOTEL</strong>
+            </a>
+            <nav class="nav nav-pills">
+                <a href="#" class="nav-link text-white" @click.prevent="openPage('index')">Главная</a>
+                <a href="#" class="nav-link text-white" @click.prevent="pageManager()" v-if="user">Управление</a>
+                <a href="#" class="nav-link text-white" @click.prevent="openPage('login')" v-if="!user">Вход</a>
+                <a href="#" class="nav-link text-white" @click.prevent="logout" v-if="user">Выход</a>
+            </nav>
+            <form class="my-2" @submit.prevent="readBooking(codeSearch)">
+                <div class="input-group">
+                    <input class="form-control" type="search" placeholder="Поиск заявки по коду"
+                           aria-label="Search" v-model="codeSearch">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-light" type="submit">Найти</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </header>
+    <transition name="fade" mode="out-in" :duration="600">
+
+        <!-- Главная страница -->
+        <div class="container d-flex justify-content-center" v-if="page === 'index'" key="index">
+            <form class="bg-dark rounded-3 p-5 position-absolute top-50 start-50 translate-middle"
+                  style="--bs-bg-opacity: .7;">
+                <h3 class="text-white">Бронирование номера</h3>
+                <div class="row">
+                    <div class="col-md-4 col-sm-auto">
+                        <!-- Заезд -->
+                        <div class="form-outline mb-4">
+                            <label class="form-label text-white-50">Дата заезда*</label>
+                            <input v-model="bookingForm.arr_date" type="date" class="form-control" @change="calculation()">
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-auto">
+                        <!-- Выезд -->
+                        <div class="form-outline mb-4">
+                            <label class="form-label text-white-50">Дата выезда*</label>
+                            <input v-model="bookingForm.dep_date" type="date" class="form-control" @change="calculation()">
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-sm-auto">
+                        <div class="form-outline mb-4">
+                            <label class="form-label text-white-50">Количество гостей*</label>
+                            <select v-model="col" class="form-select">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button @click.prevent="pageBooking()" class="btn btn-success btn-block">Бронировать</button>
+                </div>
+            </form>
+        </div>
+        <!-- Главная страница -->
+
+        <!-- Страница входа -->
+        <div class="d-flex justify-content-center mt-5" v-if="page === 'login'" key="login">
+            <section class="p-5 border bg-light col-3">
+                <div class="mb-4 d-flex justify-content-between align-items-center">
+                    <h2>Вход</h2>
+                </div>
+
+                <form class="rounded-3" @submit.prevent="login">
+                    <div class="mb-3">
+                        <label>Логин</label>
+                        <input type="text" class="form-control" placeholder="Логин" v-model="loginForm.login">
+                    </div>
+                    <div class="mb-3">
+                        <label>Пароль</label>
+                        <input type="password" class="form-control" placeholder="Пароль" v-model="loginForm.password">
+                    </div>
+                    <button type="submit" class="btn btn-success">Войти></button>
+                </form>
+            </section>
+        </div>
+        <!-- Страница входа -->
+
+        <!-- Страница заявки на бронирование -->
+        <div class="container w-75 border bg-light mt-5" v-if="page === 'addBooking'" key="addBooking">
+            <section class="p-5">
+                <div class="mb-4 d-flex justify-content-between align-items-center">
+                    <h2>Заявка на бронирование номера</h2>
+                </div>
+                <form>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <!-- Заезд -->
+                            <div class="form-outline mb-2">
+                                <label class="form-label">Дата заезда*</label>
+                                <input v-model="bookingForm.arr_date" type="date" class="form-control" @change="calculation()">
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <!-- Заезд -->
+                            <div class="form-outline mb-2">
+                                <label class="form-label">Дата отъезда*</label>
+                                <input v-model="bookingForm.dep_date" type="date" class="form-control" @change="calculation()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-outline mb-4">
+                        <div class="row">
+                            <div v-for="category in categories.data" :key="category.id" class="col-6 col-md-6">
+                                <div class="card mb-3" >
+                                    <img class="card-img-top" :src="category.photo"
+                                         alt="placeholder">
+                                    <div class="card-img-overlay">
+                                        <div class="d-flex justify-content-between">
+                                            <span class="badge bg-info mb-3">{{ sum[category.id] }} руб</span>
+                                            <input type="radio" class="btn-check" name="category" :id="category.id"
+                                                   autocomplete="off" v-model="bookingForm.room_category_id" :value="category.id" >
+                                            <label class="btn btn-outline-info" :for="category.id">Выбрать</label>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            <small class="text-muted">{{category.code}}</small>
+                                        </p>
+                                        <h5 class="card-title">{{category.name}}</h5>
+                                        <div class="d-flex flex-row mb-2">
+                                            <div class="m-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                                                     fill="currentColor"
+                                                     class="bi bi-arrows-angle-expand text-primary" viewBox="0 0 16 16">
+                                                    <path fill-rule="evenodd"
+                                                          d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707z"></path>
+                                                </svg>
+                                                <small> {{category.square}} кв.м </small>
+                                            </div>
+                                            <div class="m-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                                                     fill="currentColor"
+                                                     class="bi bi-layout-split text-primary" viewBox="0 0 16 16">
+                                                    <path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3zm8.5-1v12H14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H8.5zm-1 0H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h5.5V2z"/>
+                                                </svg>
+                                                <small> {{category.number_of_rooms}} комн. </small>
+                                            </div>
+                                            <div class="m-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15"
+                                                     fill="currentColor"
+                                                     class="bi bi-people text-primary"
+                                                     viewBox="0 0 16 16">
+                                                    <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+                                                </svg>
+                                                <small> до {{category.guests}} мест. </small>
+                                            </div>
+                                        </div>
+                                        <div>Cвободных номеров: {{free[category.id]}}</div>
+                                        <a href="#" class="btn btn-link mt-3" @click.prevent="readCategory(category.id)" style="position: relative;">Подробнее</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-for="n in Number(col)" class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between bg-secondary bg-opacity-75 text-white">
+                                    <h5 class="card-title">
+                                        Данные гостя №{{n}}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="form-outline mb-4 col-4">
+                                            <label class="form-label">Фамилия</label>
+                                            <input type="text" class="form-control" v-model="bookingForm.guests[n-1].surname">
+                                        </div>
+                                        <div class="form-outline mb-4 col-4">
+                                            <label class="form-label">Имя*</label>
+                                            <input type="text" class="form-control" v-model="bookingForm.guests[n-1].name">
+                                        </div>
+                                        <div class="form-outline mb-4 col-4">
+                                            <label class="form-label">Отчество</label>
+                                            <input type="text" class="form-control" v-model="bookingForm.guests[n-1].patronymic">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6 mb-3">
+                                            <div class="form-outline mb-2">
+                                                <label class="form-label">Дата рождения*</label>
+                                                <input type="date" class="form-control" v-model="bookingForm.guests[n-1].birthday">
+                                            </div>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <label class="form-label">Пол*</label>
+                                            <div class="d-flex flex-row border p-1">
+                                                <div class="form-check mx-2">
+                                                    <input class="form-check-input"  v-model="bookingForm.guests[n-1].gender" type="radio" :name=n
+                                                           value="м">
+                                                    <label class="form-check-label">
+                                                        мужской
+                                                    </label>
+                                                </div>
+                                                <div class="form-check mx-2">
+                                                    <input class="form-check-input" v-model="bookingForm.guests[n-1].gender" type="radio" :name=n
+                                                           value="ж">
+                                                    <label class="form-check-label">
+                                                        женский
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="row">
+                                        <label class="form-label">Документ, удостоверяющий личность*</label>
+                                        <div class="input-group mb-3">
+                                            <select class="form-select" aria-label="Default select example" v-model="bookingForm.guests[n-1].document_type_id">
+                                                <option value="1">Паспорт гражданина РФ</option>
+                                                <option value="2">Свидетельство о рождении</option>
+                                                <option value="3">Паспорт иностранного гражданина</option>
+                                                <option value="4">Военный билет</option>
+                                            </select>
+                                            <input type="text" class="form-control" placeholder="Номер документа" v-model="bookingForm.guests[n-1].document_number">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-5">
+                        <div class="col-6 mb-3">
+                            <div class="form-outline mb-2">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" v-model="bookingForm.email">
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="form-outline mb-2">
+                                <label class="form-label">Телефон</label>
+                                <input type="text" class="form-control" v-model="bookingForm.phone">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-outline mb-4">
+                        <label class="form-label">Город</label>
+                        <input type="text" class="form-control" v-model="bookingForm.city">
+                    </div>
+                    <a href="#" class="btn btn-success mt-4" @click.prevent="addBooking()">Бронировать</a>
+                </form>
+            </section>
+        </div>
+        <!-- Страница заявки на бронирование -->
+
+        <!-- Просмотр / редактирование бронирования-->
+        <div class="container w-75 border bg-light my-5" v-if="page === 'booking'" key="booking">
+            <section class="p-5">
+                <div class="d-flex justify-content-between">
+                    <h2>Заявка на бронирование номера</h2>
+                    <div class="badge bg-primary"><h2>{{oneBooking.data.code}}</h2></div>
+                </div>
+                <div class="my-2">
+                    <b>Категория номера:</b> {{oneBooking.data.room_category}}
+                </div>
+                <div class="my-2">
+                    <b>Email:</b> {{oneBooking.data.email}}
+                </div>
+                <div class="my-2">
+                    <b>Телефон:</b> {{oneBooking.data.phone}}
+                </div>
+                <div class="my-2">
+                    <b>Город:</b> {{oneBooking.data.city}}
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-4 col-sm-auto" v-for="(guest, i) in oneBooking.data.guests">
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between bg-secondary bg-opacity-75 text-white">
+                                <h5 class="card-title">
+                                    Гость №{{i+1}}
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div><b>ФИО: </b>{{guest.surname}} {{guest.name}} {{guest.patronymic }}</div>
+                                <div><b>Дата рождения: </b>{{guest.birthday}}</div>
+                                <div><b>Пол: </b>{{guest.gender}}</div>
+                                <div><b>Тип документа: </b>{{guest.document_type}}</div>
+                                <div><b>Номер документа: </b>{{guest.document_number}}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <form @submit.prevent="editBooking(oneBooking.data.id)">
+                    <label class="form-label"><b>Статус заявки: </b></label>
+                    <select class="form-select" aria-label="Default select example" v-model="oneBooking.data.status" :disabled="isButtonDisabled">
+                        <option :value="1">Ожидание</option>
+                        <option :value="2">Согласована</option>
+                        <option :value="3">Отклонена</option>
+                    </select>
+                    <button v-if="user" href="#" class="btn btn-success mt-4">Сохранить</button>
+                </form>
+            </section>
+        </div>
+        <!-- Просмотр / редактирование бронирования-->
+
+        <!-- Просмотр категории-->
+        <div class="container" v-if="page === 'category'" key="category">
+            <section class="py-5">
+                <div class="row">
+                    <div class="col-5">
+                        <img class="mb-4 w-100" :src="oneCategory.photo" alt="placeholder">
+                    </div>
+                    <div class="col-7">
+                        <h2 class="mb-2">{{oneCategory.name}}</h2>
+                        <div class="text-muted">{{oneCategory.code}}</div>
+                        <hr>
+                        <div class="d-flex flex-row">
+                            <div class="m-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     class="bi bi-arrows-angle-expand text-primary" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                          d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707z"></path>
+                                </svg>
+                                {{oneCategory.square}} кв.м
+                            </div>
+                            <div class="m-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     class="bi bi-layout-split text-primary" viewBox="0 0 16 16">
+                                    <path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3zm8.5-1v12H14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H8.5zm-1 0H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h5.5V2z"/>
+                                </svg>
+                                {{oneCategory.number_of_rooms}} комн.
+                            </div>
+                            <div class="m-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                     class="bi bi-people text-primary"
+                                     viewBox="0 0 16 16">
+                                    <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+                                </svg>
+                                до {{oneCategory.guests}} мест.
+                            </div>
+                        </div>
+                        <hr>
+                        <p class="mt-3">
+                            {{oneCategory.description}}
+                        </p>
+                        <div class="border bg-light">
+                            <div class="m-3" v-for="icon in oneCategory.service_icons">
+                                <span v-html= "icon.code"></span>
+                                {{icon.name}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+        <!-- Просмотр категории-->
+
+        <!-- Страница управления -->
+        <div class="container my-2" v-if="page === 'manager'" key="manager">
+            <section class="py-5">
+                <div class="mb-4 d-flex justify-content-between align-items-center">
+                    <h2>Управление заявками на бронирование</h2>
+                </div>
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>code</th>
+                        <th>Дата и время</th>
+                        <th>Статус</th>
+                        <th>Дата заезда</th>
+                        <th>Дата отъезда</th>
+                        <th>Категория номера</th>
+                        <th></th>
+                    </tr>
+                    <tr v-for="booking in allBookings.data">
+                        <td>{{booking.id}}</td>
+                        <td>{{booking.code}}</td>
+                        <td>{{booking.status}}</td>
+                        <td>{{booking.arr_date}}</td>
+                        <td>{{booking.dep_date}}</td>
+                        <td>{{booking.room_category}}</td>
+                        <td>
+                            <a href="#" class="btn btn-primary btn-sm" @click.prevent="readBooking(booking.code)">Редактировать</a>
+                        </td>
+                    </tr>
+                </table>
+            </section>
+            <hr>
+            <section class="py-5">
+                <div class="mb-4 d-flex justify-content-between align-items-center">
+                    <h2>Управление менеджерами</h2>
+                    <a href="#" class="btn btn-sm btn-success" @click.prevent="openPage('addUser')">Добавить менеджера</a>
+                </div>
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>ФИО</th>
+                        <th>login</th>
+                        <th>Статус</th>
+                        <th>Фото</th>
+                        <th></th>
+                    </tr>
+                    <tr v-for="manager in allUsers.data">
+                        <td>{{manager.id}}</td>
+                        <td>{{manager.surname}} {{manager.name}} {{manager.patronymic}}</td>
+                        <td>{{manager.login}}</td>
+                        <td>{{manager.status}}</td>
+                        <td><img :src="manager.photo_file" class="img-thumbnail" width="100px" alt="">
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-danger btn-sm" @click.prevent="toDismiss(manager.id)">Уволить</a>
+                        </td>
+                    </tr>
+                </table>
+            </section>
+            <hr>
+            <section class="py-5">
+                <div class="mb-4 d-flex justify-content-between align-items-center">
+                    <h2>Управление прайсами</h2>
+                    <a href="addPrice.html" class="btn btn-sm btn-success">Добавить прайс</a>
+                </div>
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>code</th>
+                        <th>Категория номера</th>
+                        <th>Дата начала действия</th>
+                        <th>Цена за номер в день</th>
+                    </tr>
+                    <tr v-for="price in allPrices.data">
+                        <td>{{price.id}}</td>
+                        <td>{{price.code}}</td>
+                        <td>{{price.room_category}}</td>
+                        <td>{{price.start_date}}</td>
+                        <td>
+                            <form class="d-flex d-inline-flex">
+                                <input type="text" class="form-control" value="1000">
+                                <a href="manage.html" class="btn btn-primary">
+                                    Сохранить
+                                </a>
+                            </form>
+                        </td>
+                    </tr>
+                </table>
+            </section>
+        </div>
+        <!-- Страница управления -->
+
+        <!-- Добавление нового менеджера-->
+        <section class=" container p-5 border bg-light col-6 mt-4" v-if="page === 'addUser'" key="addUser">
+            <div class="mb-4 d-flex justify-content-between align-items-center">
+                <h2>Добавление менеджера</h2>
+            </div>
+            <form class="rounded-3" @submit.prevent="addUser">
+                <div class="mb-3">
+                    <label>Фамилия</label>
+                    <input type="text" class="form-control" placeholder="Фамилия" v-model="addManagerForm.surname">
+                </div>
+                <div class="mb-3">
+                    <label>Имя*</label>
+                    <input type="text" class="form-control" placeholder="Имя" v-model="addManagerForm.name">
+                </div>
+                <div class="mb-3">
+                    <label>Отчество</label>
+                    <input type="text" class="form-control" placeholder="Отчество" v-model="addManagerForm.patronymic">
+                </div>
+                <div class="mb-3">
+                    <label>Логин*</label>
+                    <input type="text" class="form-control" placeholder="Логин" v-model="addManagerForm.login">
+                </div>
+                <div class="mb-3">
+                    <label>Пароль*</label>
+                    <input type="password" class="form-control" placeholder="Пароль" v-model="addManagerForm.password">
+                </div>
+                <div class="mb-3">
+                    <label>Фото</label>
+                    <input type="file" class="form-control" @change="fileSelected">
+                </div>
+                <button class="btn btn-success mt-3">Добавить</button>
+            </form>
+        </section>
+        <!-- Добавление нового менеджера-->
+
+    </transition>
+
+    <!-- Уведомления -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+        <transition-group name="fade">
+            <div v-for="toast in toasts" :key="toast.id" class="toast show mb-2">
+                <div class="toast-body" :class="toast.classes">{{ toast.text }}</div>
+            </div>
+        </transition-group>
+    </div>
+    <!-- / Уведомления -->
+
+
+</div>
+<script src="assets/js/vue.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
